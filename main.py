@@ -25,7 +25,7 @@ Actuá como un analista de conversaciones. Generá un informe con:
 Texto: {transcript['text']}
     """
     completion = openai.ChatCompletion.create(
-        model="gpt-4",
+        model="gpt-3.5-turbo",
         messages=[{"role": "user", "content": prompt}]
     )
 
