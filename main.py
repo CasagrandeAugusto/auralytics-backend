@@ -19,9 +19,6 @@ async def upload_audio(file: UploadFile = File(...)):
             shutil.copyfileobj(file.file, buffer)
 
         with open(temp_file_path, "rb") as audio_file:
-            # Asegurarse de que el archivo tiene nombre
-            audio_file.name = file.filename
-
             # Transcripción con Whisper
             transcript = client.audio.transcriptions.create(
                 model="whisper-1",
