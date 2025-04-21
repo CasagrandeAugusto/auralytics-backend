@@ -1,11 +1,11 @@
 from fastapi import FastAPI, File, UploadFile
-import openai
+from openai import OpenAI
 import shutil
 import os
 
-openai.api_key = os.getenv("OPENAI_API_KEY")
-
 app = FastAPI()
+
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 @app.post("/upload")
 async def upload_audio(file: UploadFile = File(...)):
@@ -13,7 +13,10 @@ async def upload_audio(file: UploadFile = File(...)):
         shutil.copyfileobj(file.file, buffer)
 
     audio_file = open("audio.mp3", "rb")
-    transcript = openai.Audio.transcribe("whisper-1", audio_file)
+    transcript = client.audio.transcriptions.create(
+        model="whisper-1",
+        file=audio_file
+    )
 
     prompt = f"""
 Actuá como un analista de conversaciones. Generá un informe con:
@@ -22,19 +25,20 @@ Actuá como un analista de conversaciones. Generá un informe con:
 3. Tareas o próximos pasos
 4. Tono emocional
 
-Texto: {transcript['text']}
+Texto: {transcript.text}
     """
-    completion = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
+
+    completion = client.chat.completions.create(
+        model="gpt-4",
         messages=[{"role": "user", "content": prompt}]
     )
 
     return {
-        "transcripcion": transcript["text"],
-        "informe": completion.choices[0].message["content"]
+        "transcripcion": transcript.text,
+        "informe": completion.choices[0].message.content
     }
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8000))
     import uvicorn
+    port = int(os.environ.get("PORT", 8000))
     uvicorn.run("main:app", host="0.0.0.0", port=port)
