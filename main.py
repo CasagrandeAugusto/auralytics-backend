@@ -6,6 +6,18 @@ import os
 import logging
 
 app = FastAPI()
+from fastapi.middleware.cors import CORSMiddleware
+
+app = FastAPI()
+
+# Esto permite que Vercel acceda a tu backend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Podés reemplazar "*" por ["https://auralytics-formulario.vercel.app"] si querés más seguridad
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 logging.basicConfig(level=logging.INFO)
